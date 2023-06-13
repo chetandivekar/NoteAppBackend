@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+//Creating the schema for the user
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -20,4 +21,6 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("user", userSchema);
+const user = mongoose.model("user", userSchema);
+user.createIndexes();
+module.exports = user;

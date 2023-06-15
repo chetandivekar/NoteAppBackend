@@ -15,7 +15,14 @@ router.post(
     body("password").isLength({ min: 5 }),
   ],
   async (req, res) => {
+    let success = false;
     try {
+      let user = await User.findOne({ email: req.body.email });
+      if (user) {
+        return res
+          .status(400)
+          .json({ error: "Sorry a user with this email already exists" });
+      }
       const result = validationResult(req);
       if (result.isEmpty()) {
         //Generating Salt and Hash for the password instead of storing plain password
@@ -33,9 +40,9 @@ router.post(
           },
         };
         const authToken = jwt.sign(data, process.env.JWT_SECRET);
-        res.json({ authtoken: authToken });
+        res.json({ success: true, authtoken: authToken });
       } else {
-        res.send({ errors: result.array() });
+        res.send({ success: false, errors: result.array() });
       }
     } catch (error) {
       console.log(error);
@@ -76,7 +83,7 @@ router.post("/loginUser", [body("email").isEmail()], async (req, res) => {
 
         //we are using user id to authenticate
         const authToken = jwt.sign(payload, process.env.JWT_SECRET);
-        res.json({ authtoken: authToken });
+        res.json({ success: true, authtoken: authToken });
       } catch (error) {
         console.log(error);
         res.status(500).send("Server error");

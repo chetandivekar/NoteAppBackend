@@ -22,7 +22,7 @@ router.post(
           title,
           description,
           tag,
-          user: req.body.id,
+          user: req.user.id,
         });
 
         const savedNotes = await notes.save();
@@ -40,13 +40,10 @@ router.post(
 //Route-2: Fetch all notes using GET path: /api/notes/fetchAllNotes (Login is required)
 router.get("/fetchAllNotes", fetchUser, async (req, res) => {
   try {
-    const result = validationResult(req);
-    if (result.isEmpty()) {
-      const notes = await Notes.find({ user: req.body.id });
-      res.json(notes);
-    } else {
-      res.send({ errors: result.array() });
-    }
+    // Check the user ID
+    const notes = await Notes.find({ user: req.user.id });
+    // Check the fetched notes
+    res.json(notes);
   } catch (error) {
     console.log(error);
     res.status(500).send("Server error");
@@ -54,7 +51,7 @@ router.get("/fetchAllNotes", fetchUser, async (req, res) => {
 });
 
 //Router-3: Updatig the notes using PUT path: /api/auth/updateNote (Login is required)
-router.put("/updateNote/:id", async (req, res) => {
+router.put("/updateNote/:id", fetchUser, async (req, res) => {
   try {
     const { title, description, tag } = req.body;
     const newNote = {};
@@ -99,7 +96,7 @@ router.delete("/updateNote/:id", fetchUser, async (req, res) => {
     if (!note) {
       return res.status(404).send("Not found");
     }
-    if (note.user && note.user.toString() !== req.params.id) {
+    if (note.user && note.user.toString() !== req.user.id) {
       return res.status(401).send("Unauthorized");
     }
 
